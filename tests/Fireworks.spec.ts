@@ -1,4 +1,4 @@
-import { Blockchain, SandboxContract } from '@ton-community/sandbox';
+import {Blockchain, printTransactionFees, SandboxContract} from '@ton-community/sandbox';
 import { toNano } from 'ton-core';
 import { Fireworks } from '../wrappers/Fireworks';
 import '@ton-community/test-utils';
@@ -38,44 +38,30 @@ describe('Fireworks', () => {
         // blockchain and fireworks are ready to use
     });
 
-    it('should increase counter', async () => {
-        const increaseTimes = 3;
-        for (let i = 0; i < increaseTimes; i++) {
-            console.log(`increase ${i + 1}/${increaseTimes}`);
+    it('should launch fireworks', async () => {
 
-            const increaser = await blockchain.treasury('increaser' + i);
+            const launcherWallet = await blockchain.treasury('increase');
 
-            const counterBefore = await fireworks.getCounter();
 
-            console.log('counter before increasing', counterBefore);
-
-            const increaseBy = BigInt(Math.floor(Math.random() * 100));
-
-            console.log('increasing by', increaseBy);
-
-            const increaseResult = await fireworks.send(
-                increaser.getSender(),
+            const launchResult = await fireworks.send(
+                launcherWallet.getSender(),
                 {
-                    value: toNano('0.05'),
+                    value: toNano('1'),
                 },
                 {
-                    $$type: 'Add',
-                    queryId: 0n,
-                    amount: increaseBy,
+                    $$type: 'Launch',
                 }
             );
 
-            expect(increaseResult.transactions).toHaveTransaction({
-                from: increaser.address,
+            expect(launchResult.transactions).toHaveTransaction({
+                from: launcherWallet.address,
                 to: fireworks.address,
                 success: true,
             });
 
-            const counterAfter = await fireworks.getCounter();
+            //const counterAfter = await fireworks.getCounter();
 
-            console.log('counter after increasing', counterAfter);
+            console.log('launcher transaction details', printTransactionFees(launchResult.transactions));
 
-            expect(counterAfter).toBe(counterBefore + increaseBy);
-        }
     });
 });
