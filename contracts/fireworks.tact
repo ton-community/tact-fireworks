@@ -22,7 +22,7 @@ contract Fireworks with Deployable {
             value: 100000000,
             mode: 0,
             bounce: true,
-            body: null
+            body: "send mode = 0".asComment()
         });
 
         //msg2 mode = 1
@@ -32,7 +32,7 @@ contract Fireworks with Deployable {
             value: 100000000,
             mode: SendPayGasSeparately,
             bounce: true,
-            body: null
+            body: "send mode = 1".asComment()
         });
 
         //msg3 mode = 2
@@ -42,7 +42,7 @@ contract Fireworks with Deployable {
             value: 100000000,
             mode: SendIgnoreErrors,
             bounce: true,
-            body: null
+            body: "send mode = 2".asComment()
         });
 
         //msg4 mode = 128 + 32
@@ -52,7 +52,7 @@ contract Fireworks with Deployable {
             value: 0,
             mode: SendRemainingBalance + SendDestroyIfZero,
             bounce: true,
-            body: null
+            body: "send mode = 128 + 32".asComment()
         });
 
     }
