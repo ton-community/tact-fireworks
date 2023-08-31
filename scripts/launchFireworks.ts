@@ -24,5 +24,5 @@ export async function run(provider: NetworkProvider, args: string[]) {
         }
     );
 
-    ui.write('Message sent successfully, check results in the blockchain explorer!');
+    ui.write(`Message sent successfully, check results in the blockchain explorer https://tonviewer.com/${address}`);
 }
