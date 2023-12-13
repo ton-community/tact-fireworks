@@ -1,8 +1,14 @@
+import { Blockchain, SandboxContract, TreasuryContract, printTransactionFees } from '@ton/sandbox';
+import { toNano, beginCell } from '@ton/core';
+import { Fireworks } from '../wrappers/Fireworks';
+import '@ton/test-utils';
+
+/*
 import {Blockchain, printTransactionFees, SandboxContract} from '@ton-community/sandbox';
 import { toNano, beginCell } from 'ton-core';
 import { Fireworks } from '../wrappers/Fireworks';
 import '@ton-community/test-utils';
-
+*/
 describe('Fireworks', () => {
     let blockchain: Blockchain;
     let fireworks: SandboxContract<Fireworks>;
@@ -43,26 +49,26 @@ describe('Fireworks', () => {
 
     it('should launch fireworks', async () => {
 
-            const launcher = await blockchain.treasury('fireworks');
-            console.log('launcher = ', launcher.address);
-            console.log('Fireworks = ', fireworks.address);
+        const launcher = await blockchain.treasury('fireworks');
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
 
 
-            const launchResult = await fireworks.send(
-                launcher.getSender(),
-                {
-                    value: toNano('1'),
-                },
-                {
-                    $$type: 'Launch',
-                }
-            );
+        const launchResult = await fireworks.send(
+            launcher.getSender(),
+            {
+                value: toNano('1'),
+            },
+            {
+                $$type: 'Launch',
+            }
+        );
 
-            expect(launchResult.transactions).toHaveTransaction({
-                from: launcher.address,
-                to: fireworks.address,
-                success: true,
-            });
+        expect(launchResult.transactions).toHaveTransaction({
+            from: launcher.address,
+            to: fireworks.address,
+            success: true,
+        });
     });
 
     it('should destroy after launching', async () => {
@@ -164,7 +170,7 @@ describe('Fireworks', () => {
 
         });
 
-            expect(launchResult.transactions).toHaveTransaction({
+        expect(launchResult.transactions).toHaveTransaction({
             from: fireworks.address,
             to: launcher.address,
             success: true,

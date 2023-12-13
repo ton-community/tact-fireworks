@@ -4,6 +4,14 @@ message Launch {
 
 }
 
+message LaunchFirst {
+
+}
+
+message SetFirst {
+
+}
+
 contract Fireworks with Deployable {
     id: Int as uint32;
 
@@ -57,7 +65,35 @@ contract Fireworks with Deployable {
 
     }
 
-    //code for tests
+        receive(msg: SetFirst) { // 0x5720cfeb
+            let ctx: Context = context(); // Check sender
+            //require(ctx.sender == self.owner, "Invalid sender");
+
+            // Jetton Gas checks
+            //let fwd_fee: Int = ctx.readForwardFee() + ctx.readForwardFee();
+            //let final: Int =  2 * self.gasConsumption + self.minTonsForStorage + fwd_fee;
+            //require(ctx.value > min(final, ton("0.01")), "Invalid value!!");
+            // Jetton Gas checks
+
+
+            let id: Int = self.id();
+            let init: StateInit = initOf Fireworks(id + 1);
+            let fireworks_address: Address = contractAddress(init);
+            send(SendParameters{
+                to: fireworks_address,
+                value: 0,
+                mode: SendRemainingValue,
+                bounce: true,
+                body: LaunchFirst{
+                }.toCell(),
+                code: init.code,
+                data: init.data
+            });
+        }
+
+
+
+
 
     get fun id(): Int {
         return self.id;

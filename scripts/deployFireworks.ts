@@ -1,9 +1,9 @@
-import { toNano } from 'ton-core';
+import { toNano } from '@ton/core';
 import { Fireworks } from '../wrappers/Fireworks';
-import { NetworkProvider } from '@ton-community/blueprint';
+import { NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {
-    const fireworks = provider.open(await Fireworks.fromInit(BigInt(Math.floor(Math.random() * 10000))));
+    const fireworks = provider.open(await Fireworks.fromInit(0n));
 
     await fireworks.send(
         provider.sender(),
@@ -18,5 +18,5 @@ export async function run(provider: NetworkProvider) {
 
     await provider.waitForDeploy(fireworks.address);
 
-    console.log('ID', await fireworks.getId());
+    // run methods on `fireworks`
 }
