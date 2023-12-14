@@ -8,10 +8,11 @@ export async function run(provider: NetworkProvider) {
     await fireworks.send(
         provider.sender(),
         {
-            value: toNano('0.05'),
+            value: toNano('2'),
         },
         {
-            $$type: 'Deploy',
+            //$$type: 'Deploy',
+            $$type:'SetFirst',
             queryId: 0n,
         }
     );
