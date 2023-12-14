@@ -23,7 +23,6 @@ message SetFirst {
 
 contract Fireworks with Deployable {
     id: Int as uint32;
-    const ONE_TON: Int = 1000000000;
 
     init(id: Int) {
         self.id = id;
@@ -39,7 +38,7 @@ contract Fireworks with Deployable {
         //send LaunchFirst message
         send(SendParameters{
             to: fireworks_address,
-            value: 1000000000,
+            value: ton("1"),
             mode: 0,
             bounce: true,
             body: LaunchFirst{
@@ -76,7 +75,7 @@ contract Fireworks with Deployable {
 
         send(SendParameters{
             to: dst,
-            value: 1000000000,
+            value: ton("0.1"),
             mode: 0,
             bounce: true,
             body: "send mode = 0".asComment()
@@ -86,7 +85,7 @@ contract Fireworks with Deployable {
 
         send(SendParameters{
             to: dst,
-            value: 1000000000,
+            value: ton("0.1"),
             mode: SendPayGasSeparately,
             bounce: true,
             body: "send mode = 1".asComment()
@@ -96,7 +95,7 @@ contract Fireworks with Deployable {
 
         send(SendParameters{
             to: dst,
-            value: 1000000000,
+            value: ton("0.1"),
             mode: SendIgnoreErrors,
             bounce: true,
             body: "send mode = 2".asComment()
@@ -106,7 +105,7 @@ contract Fireworks with Deployable {
 
         send(SendParameters{
             to: dst,
-            value: 1000000000,
+            value: ton("0.1"),
             mode: SendRemainingBalance + SendDestroyIfZero,
             bounce: true,
             body: "send mode = 128 + 32".asComment()
