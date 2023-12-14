@@ -52,8 +52,8 @@ contract Fireworks with Deployable {
        //send LaunchSecond message
         send(SendParameters{
             to: fireworks_address,
-            value: 0,
-            mode: SendRemainingValue,
+            value: ton("0.5"),
+            mode: 0,
             bounce: true,
             body: LaunchSecond{
                 queryId: id + 2,
@@ -77,7 +77,6 @@ contract Fireworks with Deployable {
             to: dst,
             value: ton("0.1"),
             mode: 0,
-            bounce: true,
             body: "send mode = 0".asComment()
         });
 
@@ -86,8 +85,7 @@ contract Fireworks with Deployable {
         send(SendParameters{
             to: dst,
             value: ton("0.1"),
-            mode: SendPayGasSeparately,
-            bounce: true,
+            mode: 0,
             body: "send mode = 1".asComment()
         });
 
@@ -96,8 +94,7 @@ contract Fireworks with Deployable {
         send(SendParameters{
             to: dst,
             value: ton("0.1"),
-            mode: SendIgnoreErrors,
-            bounce: true,
+            mode: 0,
             body: "send mode = 2".asComment()
         });
 
@@ -106,8 +103,7 @@ contract Fireworks with Deployable {
         send(SendParameters{
             to: dst,
             value: ton("0.1"),
-            mode: SendRemainingBalance + SendDestroyIfZero,
-            bounce: true,
+            mode: 0,
             body: "send mode = 128 + 32".asComment()
         });
 
@@ -125,8 +121,7 @@ contract Fireworks with Deployable {
         send(SendParameters{
             to: dst,
             value: 0,
-            mode: SendRemainingValue,
-            bounce: true,
+            mode: 0,
             body: "send mode = 64".asComment()
         });
 

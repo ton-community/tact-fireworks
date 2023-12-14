@@ -38,7 +38,7 @@ describe('Fireworks', () => {
         const deployResult = await fireworks.send(
             launcher.getSender(),
             {
-                value: toNano('6'),
+                value: toNano('2.0'),
             },
             {
                 $$type: 'SetFirst',
