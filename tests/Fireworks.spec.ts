@@ -27,14 +27,18 @@ describe('Fireworks', () => {
 
 
 
-        //creating special treasury in Sandbox blockchain space. Treasury is a wallet which owned Toncoins on its balance.
-        const deployer = await blockchain.treasury('deployer');
 
-        //sending the 'Deploy' message from treasury to fireworks address to deploy fireworks contract
+
+        //creating special treasury in Sandbox blockchain space. Treasury is a wallet which owned Toncoins on its balance.
+        const launcher = await blockchain.treasury('deployer');
+
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
+
         const deployResult = await fireworks.send(
-            deployer.getSender(),
+            launcher.getSender(),
             {
-                value: toNano('2'),
+                value: toNano('6'),
             },
             {
                 $$type: 'SetFirst',
@@ -42,11 +46,12 @@ describe('Fireworks', () => {
             }
         );
 
+
         expect(deployResult.transactions).toHaveTransaction({
-            from: deployer.address,
+            from: launcher.address,
             to: fireworks.address,
             deploy: true,
-          //  success: true,
+            success: true,
         });
     });
 
