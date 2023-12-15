@@ -30,6 +30,7 @@ contract Fireworks with Deployable {
 
     receive(msg: SetFirst) { // 0xda1e3345
 
+
         let id: Int = self.id();
 
         let init: StateInit = initOf Fireworks(id + 1);
@@ -50,6 +51,7 @@ contract Fireworks with Deployable {
         });
 
        //send LaunchSecond message
+
         send(SendParameters{
             to: fireworks_address,
             value: ton("0.5"),
@@ -62,6 +64,7 @@ contract Fireworks with Deployable {
             code: init.code,
             data: init.data
         });
+
     }
 
 
@@ -85,7 +88,7 @@ contract Fireworks with Deployable {
         send(SendParameters{
             to: dst,
             value: ton("0.1"),
-            mode: 0,
+            mode: SendPayGasSeparately,
             body: "send mode = 1".asComment()
         });
 
@@ -94,7 +97,7 @@ contract Fireworks with Deployable {
         send(SendParameters{
             to: dst,
             value: ton("0.1"),
-            mode: 0,
+            mode: SendIgnoreErrors,
             body: "send mode = 2".asComment()
         });
 
@@ -102,8 +105,8 @@ contract Fireworks with Deployable {
 
         send(SendParameters{
             to: dst,
-            value: ton("0.1"),
-            mode: 0,
+            value: 0,
+            mode: SendRemainingBalance + SendDestroyIfZero,
             body: "send mode = 128 + 32".asComment()
         });
 
@@ -121,7 +124,7 @@ contract Fireworks with Deployable {
         send(SendParameters{
             to: dst,
             value: 0,
-            mode: 0,
+            mode: SendRemainingValue,
             body: "send mode = 64".asComment()
         });
 
