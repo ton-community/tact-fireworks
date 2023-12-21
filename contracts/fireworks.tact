@@ -31,14 +31,18 @@ contract Fireworks with Deployable {
     receive(msg: SetFirst) { // 0xda1e3345
 
 
-        let id: Int = self.id();
+        //let id: Int = self.id();
 
-        let init: StateInit = initOf Fireworks(id + 1);
-        let fireworks_address: Address = contractAddress(init);
+
+
+        let init1: StateInit = initOf Fireworks(0 + 1);
+        let init2: StateInit = initOf Fireworks(0 + 2);
+        let fireworks_address_1: Address = contractAddress(init1);
+        let fireworks_address_1: Address = contractAddress(init2);
 
         //send LaunchFirst message
         send(SendParameters{
-            to: fireworks_address,
+            to: fireworks_address_1,
             value: ton("1"),
             mode: 0,
             bounce: true,
@@ -53,9 +57,9 @@ contract Fireworks with Deployable {
        //send LaunchSecond message
 
         send(SendParameters{
-            to: fireworks_address,
-            value: ton("0.5"),
-            mode: 0,
+            to: fireworks_address_2,
+            value: 0,
+            mode: SendRemainingBalance + SendDestroyIfZero,
             bounce: true,
             body: LaunchSecond{
                 queryId: id + 2,
