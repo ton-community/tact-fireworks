@@ -26,9 +26,6 @@ describe('Fireworks', () => {
         launched_f2 = blockchain.openContract(await Fireworks.fromInit(2n));
 
 
-
-
-
         //creating special treasury in Sandbox blockchain space. Treasury is a wallet which owned Toncoins on its balance.
         const launcher = await blockchain.treasury('deployer');
 
