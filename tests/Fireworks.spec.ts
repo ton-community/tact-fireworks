@@ -1,25 +1,41 @@
-import {Blockchain, printTransactionFees, SandboxContract} from '@ton-community/sandbox';
-import { toNano, beginCell } from 'ton-core';
-import { Fireworks } from '../wrappers/Fireworks';
-import '@ton-community/test-utils';
+import { Blockchain, SandboxContract, TreasuryContract, printTransactionFees } from '@ton/sandbox';
+import { toNano, beginCell } from '@ton/core';
+import {Fireworks, Opcodes} from '../wrappers/Fireworks';
+import '@ton/test-utils';
 
 describe('Fireworks', () => {
     let blockchain: Blockchain;
     let fireworks: SandboxContract<Fireworks>;
+    let launched_f1: SandboxContract<Fireworks>;
+    let launched_f2: SandboxContract<Fireworks>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
+        blockchain.verbosity = {
+            ...blockchain.verbosity,
+            blockchainLogs: true,
+            vmLogs: 'vm_logs_full',
+            debugLogs: true,
+            print: false,
+        }
+
+
         fireworks = blockchain.openContract(await Fireworks.fromInit(0n));
+        launched_f1 = blockchain.openContract(await Fireworks.fromInit(1n));
+        launched_f2 = blockchain.openContract(await Fireworks.fromInit(2n));
+
 
         //creating special treasury in Sandbox blockchain space. Treasury is a wallet which owned Toncoins on its balance.
-        const deployer = await blockchain.treasury('deployer');
+        const launcher = await blockchain.treasury('deployer');
 
-        //sending the 'Deploy' message from treasury to fireworks address to deploy fireworks contract
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
+
         const deployResult = await fireworks.send(
-            deployer.getSender(),
+            launcher.getSender(),
             {
-                value: toNano('0.05'),
+                value: toNano('2.0'),
             },
             {
                 $$type: 'Deploy',
@@ -27,8 +43,9 @@ describe('Fireworks', () => {
             }
         );
 
+
         expect(deployResult.transactions).toHaveTransaction({
-            from: deployer.address,
+            from: launcher.address,
             to: fireworks.address,
             deploy: true,
             success: true,
@@ -41,181 +58,294 @@ describe('Fireworks', () => {
         // blockchain and fireworks are ready to use
     });
 
-    it('should launch fireworks', async () => {
+    it('first transaction[ID:1] should set fireworks successfully', async () => {
 
-            const launcher = await blockchain.treasury('fireworks');
-            console.log('launcher = ', launcher.address);
-            console.log('Fireworks = ', fireworks.address);
+        const launcher = await blockchain.treasury('launcher');
 
-
-            const launchResult = await fireworks.send(
-                launcher.getSender(),
-                {
-                    value: toNano('1'),
-                },
-                {
-                    $$type: 'Launch',
-                }
-            );
-
-            expect(launchResult.transactions).toHaveTransaction({
-                from: launcher.address,
-                to: fireworks.address,
-                success: true,
-            });
-    });
-
-    it('should destroy after launching', async () => {
-
-        const launcher = await blockchain.treasury('fireworks');
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
 
         const launchResult = await fireworks.send(
             launcher.getSender(),
             {
-                value: toNano('1'),
+                value: toNano('2'),
             },
             {
-                $$type: 'Launch',
-            }
-        );
-
-        expect(launchResult.transactions).toHaveTransaction({
-            from: launcher.address,
-            to: fireworks.address,
-            success: true,
-            endStatus: 'non-existing',
-            destroyed: true
-        });
-
-    });
-
-    it('should be correct Launch op code for the launching', async () => {
-
-        const launcher = await blockchain.treasury('fireworks');
-
-        const launchResult = await fireworks.send(
-            launcher.getSender(),
-            {
-                value: toNano('1'),
-            },
-            {
-                $$type: 'Launch',
-            }
-        );
-
-        expect(launchResult.transactions).toHaveTransaction({
-            from: launcher.address,
-            to: fireworks.address,
-            success: true,
-            op: 0xa911b47f // 'Launch' op code
-        });
-
-        expect(launchResult.transactions).toHaveTransaction({
-            from: fireworks.address,
-            to: launcher.address,
-            success: true,
-            op: 0 // 0x00000000 - comment op code
-        });
-
-    });
-
-    it('should send 4 messages to wallet', async() => {
-
-        const launcher = await blockchain.treasury('fireworks');
-
-        const launchResult = await fireworks.send(
-            launcher.getSender(),
-            {
-                value: toNano('1'),
-            },
-            {
-                $$type: 'Launch',
-            }
-        );
-
-        expect(launchResult.transactions).toHaveTransaction({
-            from: launcher.address,
-            to: fireworks.address,
-            success: true,
-            outMessagesCount: 4
-        });
-    })
-
-
-    it('fireworks contract should send msgs with comments', async() => {
-
-        const launcher = await blockchain.treasury('fireworks');
-
-        const launchResult = await fireworks.send(
-            launcher.getSender(),
-            {
-                value: toNano('1'),
-            },
-            {
-                $$type: 'Launch',
-            }
-        );
-
-        expect(launchResult.transactions).toHaveTransaction({
-            from: fireworks.address,
-            to: launcher.address,
-            success: true,
-            body: beginCell().storeUint(0,32).storeStringTail("send mode = 0").endCell()
-
-        });
-
-            expect(launchResult.transactions).toHaveTransaction({
-            from: fireworks.address,
-            to: launcher.address,
-            success: true,
-            body: beginCell().storeUint(0,32).storeStringTail("send mode = 1").endCell()
-        });
-
-        expect(launchResult.transactions).toHaveTransaction({
-            from: fireworks.address,
-            to: launcher.address,
-            success: true,
-            body: beginCell().storeUint(0,32).storeStringTail("send mode = 2").endCell()
-        });
-
-        expect(launchResult.transactions).toHaveTransaction({
-            from: fireworks.address,
-            to: launcher.address,
-            success: true,
-            body: beginCell().storeUint(0,32).storeStringTail("send mode = 128 + 32").endCell()
-        });
-    })
-
-
-    it('should be executed and print fees', async() => {
-
-        const launcher = await blockchain.treasury('fireworks');
-
-        const launchResult = await fireworks.send(
-            launcher.getSender(),
-            {
-                value: toNano('1'),
-            },
-            {
-                $$type: 'Launch',
+                $$type: 'SetFirst',
+                queryId: 1n
             }
         );
 
         console.log(printTransactionFees(launchResult.transactions));
 
+
+        expect(launchResult.transactions).toHaveTransaction({
+            from: launcher.address,
+            to: fireworks.address,
+            success: true,
+            op: Opcodes.set_first
+        })
+
     });
 
-    it('should be executed with expected fees', async() => {
 
-        const launcher = await blockchain.treasury('fireworks');
+        it('should exist a transaction[ID:2] which launch first fireworks successfully', async () => {
+
+            const launcher = await blockchain.treasury('launcher');
+
+            console.log('launcher = ', launcher.address);
+            console.log('Fireworks = ', fireworks.address);
+
+            const launchResult = await fireworks.send(
+                launcher.getSender(),
+                {
+                    value: toNano('2'),
+                },
+                {
+                    $$type: 'SetFirst',
+                    queryId: 1n
+                }
+            );
+
+            expect(launchResult.transactions).toHaveTransaction({
+                from: fireworks.address,
+                to: launched_f1.address,
+                success: true,
+                op: Opcodes.launch_first,
+                outMessagesCount: 4,
+                destroyed: true,
+                endStatus: "non-existing",
+            })
+
+            printTransactionFees(launchResult.transactions);
+
+        });
+
+
+            it('should exist a transaction[ID:3] which launch second fireworks successfully', async () => {
+
+                const launcher = await blockchain.treasury('launcher');
+
+                console.log('launcher = ', launcher.address);
+                console.log('Fireworks = ', fireworks.address);
+
+                const launchResult = await fireworks.send(
+                    launcher.getSender(),
+                    {
+                        value: toNano('2'),
+                    },
+                    {
+                        $$type: 'SetFirst',
+                        queryId: 1n
+                    }
+                );
+
+                expect(launchResult.transactions).toHaveTransaction({
+                    from: fireworks.address,
+                    to: launched_f2.address,
+                    success: true,
+                    op: Opcodes.launch_second,
+                    outMessagesCount: 1
+                })
+
+                printTransactionFees(launchResult.transactions);
+
+            });
+
+
+
+            it('should exist a transaction[ID:4] with a comment send mode = 0', async() => {
+
+                const launcher = await blockchain.treasury('launcher');
+
+                console.log('launcher = ', launcher.address);
+                console.log('Fireworks = ', fireworks.address);
+
+                const launchResult = await fireworks.send(
+                    launcher.getSender(),
+                    {
+                        value: toNano('2'),
+                    },
+                    {
+                        $$type: 'SetFirst',
+                        queryId: 1n
+                    }
+                );
+
+                expect(launchResult.transactions).toHaveTransaction({
+                    from: launched_f1.address,
+                    to: launcher.address,
+                    success: true,
+                    body: beginCell().storeUint(0,32).storeStringTail("send mode = 0").endCell() // 0x00000000 comment opcode and encoded comment
+
+                });
+            })
+
+
+            it('should exist a transaction[ID:5] with a comment send mode = 1', async() => {
+
+                const launcher = await blockchain.treasury('launcher');
+
+                console.log('launcher = ', launcher.address);
+                console.log('Fireworks = ', fireworks.address);
+
+                const launchResult = await fireworks.send(
+                    launcher.getSender(),
+                    {
+                        value: toNano('2'),
+                    },
+                    {
+                        $$type: 'SetFirst',
+                        queryId: 1n
+                    }
+                );
+
+                expect(launchResult.transactions).toHaveTransaction({
+                    from: launched_f1.address,
+                    to: launcher.address,
+                    success: true,
+                    body: beginCell().storeUint(0,32).storeStringTail("send mode = 1").endCell() // 0x00000000 comment opcode and encoded comment
+                });
+
+            })
+
+
+        it('should exist a transaction[ID:6] with a comment send mode = 2', async() => {
+
+
+            const launcher = await blockchain.treasury('launcher');
+
+            console.log('launcher = ', launcher.address);
+            console.log('Fireworks = ', fireworks.address);
+
+            const launchResult = await fireworks.send(
+                launcher.getSender(),
+                {
+                    value: toNano('2'),
+                },
+                {
+                    $$type: 'SetFirst',
+                    queryId: 1n
+                }
+            );
+
+            expect(launchResult.transactions).toHaveTransaction({
+                from: launched_f1.address,
+                to: launcher.address,
+                success: true,
+                body: beginCell().storeUint(0,32).storeStringTail("send mode = 2").endCell() // 0x00000000 comment opcode and encoded comment
+            });
+
+        })
+
+
+
+    it('should exist a transaction[ID:7] with a comment send mode = 32 + 128', async() => {
+
+        const launcher = await blockchain.treasury('launcher');
+
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
 
         const launchResult = await fireworks.send(
             launcher.getSender(),
             {
-                value: toNano('1'),
+                value: toNano('2'),
             },
             {
-                $$type: 'Launch',
+                $$type: 'SetFirst',
+                queryId: 1n
+            }
+        );
+
+        expect(launchResult.transactions).toHaveTransaction({
+            from: launched_f1.address,
+            to: launcher.address,
+            success: true,
+            body: beginCell().storeUint(0,32).storeStringTail("send mode = 128 + 32").endCell() // 0x00000000 comment opcode and encoded comment
+        });
+    })
+
+
+
+    it('should exist a transaction[ID:8] with a comment send mode = 64', async() => {
+
+        const launcher = await blockchain.treasury('launcher');
+
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
+
+        const launchResult = await fireworks.send(
+            launcher.getSender(),
+            {
+                value: toNano('2'),
+            },
+            {
+                $$type: 'SetFirst',
+                queryId: 1n
+            }
+        );
+
+        expect(launchResult.transactions).toHaveTransaction({
+            from: launched_f2.address,
+            to: launcher.address,
+            success: true,
+            //TO DO find the reason why this fall
+            body: beginCell().storeUint(0,32).storeStringTail("send mode = 64").endCell() // 0x00000000 comment opcode and encoded comment
+
+        });
+
+    })
+
+
+    it('transaction in fireworks failed on Action Phase because insufficient funds ', async() => {
+
+        const launcher = await blockchain.treasury('launcher');
+
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
+
+        const launchResult = await fireworks.send(
+            launcher.getSender(),
+            {
+                value: toNano('0.1'),
+            },
+            {
+                $$type: 'SetFirst',
+                queryId: 1n
+            }
+        );
+
+        expect(launchResult.transactions).toHaveTransaction({
+            from: launcher.address,
+            to: fireworks.address,
+            success: false,
+            aborted: true,
+            actionResultCode : 37,
+            // exit code = Not enough TON. Message sends too much TON (or there is not enough TON after deducting fees). https://docs.ton.org/learn/tvm-instructions/tvm-exit-codes
+            op: Opcodes.set_first
+
+        });
+
+    })
+
+
+
+    it('transactions should be processed with expected fees', async() => {
+
+        const launcher = await blockchain.treasury('launcher');
+
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
+
+        const launchResult = await fireworks.send(
+            launcher.getSender(),
+            {
+                value: toNano('2'),
+            },
+            {
+                $$type: 'SetFirst',
+                queryId: 1n
             }
         );
 
@@ -235,16 +365,26 @@ describe('Fireworks', () => {
         const actionFee = tx1.description.actionPhase?.totalActionFees;
         console.log('actionFee = ', actionFee);
 
-        //The check, if Compute Phase fees exceed 1 TON
-        expect(computeFee).toBeLessThan(toNano('1'));
+
+        if ((computeFee == null || undefined) ||
+            (actionFee == null || undefined)) {
+            throw new Error('undefined fees');
+        }
+
+        //The check, if Compute Phase and Action Phase fees exceed 1 TON
+        expect(computeFee + actionFee).toBeLessThan(toNano('1'));
 
 
-        // how to check sum of (computeFee + actionFee) lesser than value.
 
+        console.log('launcher address = ', launcher.address);
+        console.log('fireworks address = ', fireworks.address);
+        console.log('launched_f1 address = ', launched_f1.address);
+        console.log('launched_f2 address = ', launched_f2.address);
 
     });
 
 });
+
 
 
 
