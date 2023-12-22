@@ -124,12 +124,24 @@ describe('Fireworks', () => {
 
         });
 
-    /*
+
             it('should exist a transaction[ID:3] which launch second fireworks successfully', async () => {
 
                 const launcher = await blockchain.treasury('launcher');
 
-                const launchResult = await fireworks.sendDeployLaunch(launcher.getSender(), toNano('2.5'));
+                console.log('launcher = ', launcher.address);
+                console.log('Fireworks = ', fireworks.address);
+
+                const launchResult = await fireworks.send(
+                    launcher.getSender(),
+                    {
+                        value: toNano('2'),
+                    },
+                    {
+                        $$type: 'SetFirst',
+                        queryId: 1n
+                    }
+                );
 
                 expect(launchResult.transactions).toHaveTransaction({
                     from: fireworks.address,
@@ -149,9 +161,18 @@ describe('Fireworks', () => {
 
                 const launcher = await blockchain.treasury('launcher');
 
-                const launchResult = await fireworks.sendDeployLaunch(
+                console.log('launcher = ', launcher.address);
+                console.log('Fireworks = ', fireworks.address);
+
+                const launchResult = await fireworks.send(
                     launcher.getSender(),
-                    toNano('2.5'),
+                    {
+                        value: toNano('2'),
+                    },
+                    {
+                        $$type: 'SetFirst',
+                        queryId: 1n
+                    }
                 );
 
                 expect(launchResult.transactions).toHaveTransaction({
@@ -168,9 +189,18 @@ describe('Fireworks', () => {
 
                 const launcher = await blockchain.treasury('launcher');
 
-                const launchResult = await fireworks.sendDeployLaunch(
+                console.log('launcher = ', launcher.address);
+                console.log('Fireworks = ', fireworks.address);
+
+                const launchResult = await fireworks.send(
                     launcher.getSender(),
-                    toNano('2.5'),
+                    {
+                        value: toNano('2'),
+                    },
+                    {
+                        $$type: 'SetFirst',
+                        queryId: 1n
+                    }
                 );
 
                 expect(launchResult.transactions).toHaveTransaction({
@@ -182,133 +212,182 @@ describe('Fireworks', () => {
 
             })
 
-            it('should exist a transaction[ID:6] with a comment send mode = 2', async() => {
 
-                const launcher = await blockchain.treasury('launcher');
-
-                const launchResult = await fireworks.sendDeployLaunch(
-                    launcher.getSender(),
-                    toNano('2.5'),
-                );
-
-                expect(launchResult.transactions).toHaveTransaction({
-                    from: launched_f1.address,
-                    to: launcher.address,
-                    success: true,
-                    body: beginCell().storeUint(0,32).storeStringTail("send mode = 2").endCell() // 0x00000000 comment opcode and encoded comment
-                });
-
-            })
-
-            it('should exist a transaction[ID:7] with a comment send mode = 32 + 128', async() => {
-
-                const launcher = await blockchain.treasury('launcher');
-
-                const launchResult = await fireworks.sendDeployLaunch(
-                    launcher.getSender(),
-                    toNano('2.5'),
-                );
-
-                expect(launchResult.transactions).toHaveTransaction({
-                    from: launched_f1.address,
-                    to: launcher.address,
-                    success: true,
-                    body: beginCell().storeUint(0,32).storeStringTail("send mode = 32 + 128").endCell() // 0x00000000 comment opcode and encoded comment
-                });
-            })
+        it('should exist a transaction[ID:6] with a comment send mode = 2', async() => {
 
 
-            it('should exist a transaction[ID:8] with a comment send mode = 64', async() => {
+            const launcher = await blockchain.treasury('launcher');
 
-                const launcher = await blockchain.treasury('launcher');
+            console.log('launcher = ', launcher.address);
+            console.log('Fireworks = ', fireworks.address);
 
-                const launchResult = await fireworks.sendDeployLaunch(
-                    launcher.getSender(),
-                    toNano('2.5'),
-                );
-
-                expect(launchResult.transactions).toHaveTransaction({
-                    from: launched_f2.address,
-                    to: launcher.address,
-                    success: true,
-                    body: beginCell().storeUint(0,32).storeStringTail("send_mode = 64").endCell() // 0x00000000 comment opcode and encoded comment
-
-                });
-
-            })
-
-            it('transaction in fireworks failed on Action Phase because insufficient funds ', async() => {
-
-                const launcher = await blockchain.treasury('launcher');
-
-                const launchResult = await fireworks.sendDeployLaunch(
-                    launcher.getSender(),
-                    toNano('2.0'),
-                );
-
-                expect(launchResult.transactions).toHaveTransaction({
-                    from: launcher.address,
-                    to: fireworks.address,
-                    success: false,
-                    aborted: true,
-                    actionResultCode : 37,
-                    // exit code = Not enough TON. Message sends too much TON (or there is not enough TON after deducting fees). https://docs.ton.org/learn/tvm-instructions/tvm-exit-codes
-                    op: Opcodes.set_first
-
-                });
-
-            })
-
-
-
-            it('transactions should be processed with expected fees', async() => {
-
-                const launcher = await blockchain.treasury('launcher');
-
-                const launchResult = await fireworks.sendDeployLaunch(
-                    launcher.getSender(),
-                    toNano('2.5'),
-                );
-
-                //totalFee
-                console.log('total fees = ', launchResult.transactions[1].totalFees);
-
-                const tx1 = launchResult.transactions[1];
-                if (tx1.description.type !== 'generic') {
-                    throw new Error('Generic transaction expected');
+            const launchResult = await fireworks.send(
+                launcher.getSender(),
+                {
+                    value: toNano('2'),
+                },
+                {
+                    $$type: 'SetFirst',
+                    queryId: 1n
                 }
+            );
 
-                //computeFee
-                const computeFee = tx1.description.computePhase.type === 'vm' ? tx1.description.computePhase.gasFees : undefined;
-                console.log('computeFee = ', computeFee);
-
-                //actionFee
-                const actionFee = tx1.description.actionPhase?.totalActionFees;
-                console.log('actionFee = ', actionFee);
-
-
-                if ((computeFee == null || undefined) ||
-                    (actionFee == null || undefined)) {
-                    throw new Error('undefined fees');
-                }
-
-                //The check, if Compute Phase and Action Phase fees exceed 1 TON
-                expect(computeFee + actionFee).toBeLessThan(toNano('1'));
-
-
-
-                console.log('launcher address = ', launcher.address);
-                console.log('fireworks address = ', fireworks.address);
-                console.log('launched_f1 address = ', launched_f1.address);
-                console.log('launched_f2 address = ', launched_f2.address);
-
+            expect(launchResult.transactions).toHaveTransaction({
+                from: launched_f1.address,
+                to: launcher.address,
+                success: true,
+                body: beginCell().storeUint(0,32).storeStringTail("send mode = 2").endCell() // 0x00000000 comment opcode and encoded comment
             });
 
+        })
+
+
+
+    it('should exist a transaction[ID:7] with a comment send mode = 32 + 128', async() => {
+
+        const launcher = await blockchain.treasury('launcher');
+
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
+
+        const launchResult = await fireworks.send(
+            launcher.getSender(),
+            {
+                value: toNano('2'),
+            },
+            {
+                $$type: 'SetFirst',
+                queryId: 1n
+            }
+        );
+
+        expect(launchResult.transactions).toHaveTransaction({
+            from: launched_f1.address,
+            to: launcher.address,
+            success: true,
+            body: beginCell().storeUint(0,32).storeStringTail("send mode = 128 + 32").endCell() // 0x00000000 comment opcode and encoded comment
         });
+    })
+
+
+
+    it('should exist a transaction[ID:8] with a comment send mode = 64', async() => {
+
+        const launcher = await blockchain.treasury('launcher');
+
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
+
+        const launchResult = await fireworks.send(
+            launcher.getSender(),
+            {
+                value: toNano('2'),
+            },
+            {
+                $$type: 'SetFirst',
+                queryId: 1n
+            }
+        );
+
+        expect(launchResult.transactions).toHaveTransaction({
+            from: launched_f2.address,
+            to: launcher.address,
+            success: true,
+            //TO DO find the reason why this fall
+            body: beginCell().storeUint(0,32).storeStringTail("send mode = 64").endCell() // 0x00000000 comment opcode and encoded comment
 
         });
-    */
+
+    })
+
+
+    it('transaction in fireworks failed on Action Phase because insufficient funds ', async() => {
+
+        const launcher = await blockchain.treasury('launcher');
+
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
+
+        const launchResult = await fireworks.send(
+            launcher.getSender(),
+            {
+                value: toNano('0.1'),
+            },
+            {
+                $$type: 'SetFirst',
+                queryId: 1n
+            }
+        );
+
+        expect(launchResult.transactions).toHaveTransaction({
+            from: launcher.address,
+            to: fireworks.address,
+            success: false,
+            aborted: true,
+            actionResultCode : 37,
+            // exit code = Not enough TON. Message sends too much TON (or there is not enough TON after deducting fees). https://docs.ton.org/learn/tvm-instructions/tvm-exit-codes
+            op: Opcodes.set_first
+
+        });
+
+    })
+
+
+
+    it('transactions should be processed with expected fees', async() => {
+
+        const launcher = await blockchain.treasury('launcher');
+
+        console.log('launcher = ', launcher.address);
+        console.log('Fireworks = ', fireworks.address);
+
+        const launchResult = await fireworks.send(
+            launcher.getSender(),
+            {
+                value: toNano('2'),
+            },
+            {
+                $$type: 'SetFirst',
+                queryId: 1n
+            }
+        );
+
+        //totalFee
+        console.log('total fees = ', launchResult.transactions[1].totalFees);
+
+        const tx1 = launchResult.transactions[1];
+        if (tx1.description.type !== 'generic') {
+            throw new Error('Generic transaction expected');
+        }
+
+        //computeFee
+        const computeFee = tx1.description.computePhase.type === 'vm' ? tx1.description.computePhase.gasFees : undefined;
+        console.log('computeFee = ', computeFee);
+
+        //actionFee
+        const actionFee = tx1.description.actionPhase?.totalActionFees;
+        console.log('actionFee = ', actionFee);
+
+
+        if ((computeFee == null || undefined) ||
+            (actionFee == null || undefined)) {
+            throw new Error('undefined fees');
+        }
+
+        //The check, if Compute Phase and Action Phase fees exceed 1 TON
+        expect(computeFee + actionFee).toBeLessThan(toNano('1'));
+
+
+
+        console.log('launcher address = ', launcher.address);
+        console.log('fireworks address = ', fireworks.address);
+        console.log('launched_f1 address = ', launched_f1.address);
+        console.log('launched_f2 address = ', launched_f2.address);
+
+    });
+
 });
+
 
 
 

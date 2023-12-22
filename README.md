@@ -24,3 +24,11 @@
 ### Add a new contract
 
 `npx blueprint create ContractName` or `yarn blueprint create ContractName`
+
+### Dependencies
+
+- [Node.js](https://nodejs.org/) with a recent version like v18, verify version with `node -v`
+- IDE with TypeScript and FunC support like [Visual Studio Code](https://code.visualstudio.com/) with the [FunC plugin](https://marketplace.visualstudio.com/items?itemName=tonwhales.func-vscode)
+- Wallet contract v3 or v4 for launching
+
+

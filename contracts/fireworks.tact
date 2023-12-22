@@ -28,59 +28,48 @@ contract Fireworks with Deployable {
         self.id = id;
     }
 
+    fun setFireworksByID(id:Int, mode: Int, value: Int, body: Cell) {
+
+    let newInit: StateInit = initOf Fireworks(id);
+    let newAddress: Address = contractAddress(newInit);
+
+        //send a message
+        send(SendParameters{
+            to: newAddress,
+            value: value,
+            mode: mode,
+            bounce: true,
+            body: body,
+            code: newInit.code,
+            data: newInit.data
+        });
+    }
+
     receive(msg: SetFirst) { // 0xda1e3345
 
+        let id: Int = self.id();
 
-        //let id: Int = self.id();
+        let body1: Cell = LaunchFirst{ queryId: 0, launcher: sender()}.toCell();
+        let body2: Cell = LaunchSecond{ queryId: 0, launcher: sender()}.toCell();
 
-
-
-        let init1: StateInit = initOf Fireworks(0 + 1);
-        let init2: StateInit = initOf Fireworks(0 + 2);
-        let fireworks_address_1: Address = contractAddress(init1);
-        let fireworks_address_1: Address = contractAddress(init2);
-
-        //send LaunchFirst message
-        send(SendParameters{
-            to: fireworks_address_1,
-            value: ton("1"),
-            mode: 0,
-            bounce: true,
-            body: LaunchFirst{
-                queryId: id + 1,
-                launcher: sender()
-                }.toCell(),
-            code: init.code,
-            data: init.data
-        });
+         //set First Fireworks
+        self.setFireworksByID(id+1, 0, ton("1"),body1);
 
        //send LaunchSecond message
-
-        send(SendParameters{
-            to: fireworks_address_2,
-            value: 0,
-            mode: SendRemainingBalance + SendDestroyIfZero,
-            bounce: true,
-            body: LaunchSecond{
-                queryId: id + 2,
-                launcher: sender()
-                }.toCell(),
-            code: init.code,
-            data: init.data
-        });
+        self.setFireworksByID(id+2, SendRemainingBalance + SendDestroyIfZero, 0, body2);
 
     }
 
 
-    receive(msg: LaunchFirst) {
+    receive(msg: LaunchFirst) { //0xf1c5c2b7
 
-       // prepare 4 messages
+       // prepare 4 messages. wallet v4 contract limited with 4 out messages per tx.
 
         let dst: Address = msg.launcher;
 
         // msg1 - sending 0.1 TON with mode = 0
 
-        send(SendParameters{
+        send(SendParameters{ //0x282c90a5
             to: dst,
             value: ton("0.1"),
             mode: 0,
@@ -105,7 +94,7 @@ contract Fireworks with Deployable {
             body: "send mode = 2".asComment()
         });
 
-        //msg4 - sending remaining 0.1 TON with mode = 32 + 128
+        //msg4 - sending remaining 0.1 TON with mode = 128 + 32
 
         send(SendParameters{
             to: dst,
@@ -133,6 +122,8 @@ contract Fireworks with Deployable {
         });
 
     }
+
+
 
 
     get fun id(): Int {
