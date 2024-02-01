@@ -1,0 +1,29 @@
+() pop_10() impure asm "s10 POP";
+
+() stack_overflow() impure asm """<{ }>CONT
+                                0 SETNUMARGS
+                                1 -1 SETCONTARGS""";
+
+() type_check_error() impure asm """<{ }>CONT
+                                0 SETNUMARGS
+                                0 PUSHINT
+                                1 -1 SETCONTARGS""";
+
+() set_c5(cell actions) impure asm "c5 POP";
+
+() dict_exit_10() impure {
+    cell dict = new_dict();
+    dict~idict_set(1, 0, begin_cell()
+        .store_ref(
+            begin_cell()
+            .store_uint(0, 1)
+            .end_cell())
+        .store_ref(begin_cell()
+            .store_uint(0, 1)
+            .end_cell())
+            .end_cell()
+            .begin_parse());
+
+    (cell value, _) = dict.idict_get_ref?(1, 0);
+    value~impure_touch();
+}
