@@ -9,7 +9,7 @@ enum ExitCode {
     StackOverflow = 3,
     IntegerOverflow = 4,
     IntegerOutOfRange = 5,
-    // InvalidOpcode = 6,
+    InvalidOpcode = 6,
     TypeCheckError = 7,
     CellOverflow = 8,
     CellUnderflow = 9,
@@ -18,11 +18,11 @@ enum ExitCode {
     ActionListInvalid = 32,
     ActionInvalid = 34,
     NotEnoughTON = 37,
-    // NotEnoughExtraCurrencies = 38,
-    // NullReferenceException = 128,
-    // InvalidSerializationPrefix = 129,
+    NotEnoughExtraCurrencies = 38,
+    NullReferenceException = 128,
+    InvalidSerializationPrefix = 129,
     InvalidIncomingMessage = 130,
-    // ConstraintsError = 131,
+    ConstraintsError = 131,
     AccessDenied = 132,
     ContractStopped = 133, // output -> 40368
     InvalidArgument = 134,
@@ -131,44 +131,44 @@ describe('Fireworks', () => {
         expect(fakeLaunch.transactions).toHaveTransaction({ from: faker.address, to: fireworks.address, success: false, actionResultCode: ExitCode.NotEnoughTON })
     });
 
-    it('Tact compute phase | exit code = 130', async () => {
+    it('tact exit code | exit code = 130', async () => {
         const faker = await blockchain.treasury('faker');
         const fakeFireworks = blockchain.openContract(new FakeFireworks(fireworks.address));
         const fakeLaunch = await fakeFireworks.send(faker.getSender(), toNano('0.05'));
         expect(fakeLaunch.transactions).toHaveTransaction({ from: faker.address, to: fireworks.address, success: false, exitCode: ExitCode.InvalidIncomingMessage })
     });
 
-    it('Tact compute phase | exit code = 132', async () => {
+    it('tact exit code | exit code = 132', async () => {
         const faker = await blockchain.treasury('faker');
         const fakeLaunch = await fireworks.send(faker.getSender(), { value: toNano('0.05'), }, { $$type: 'FakeLaunch', exitCode: BigInt(ExitCode.AccessDenied) });
         expect(fakeLaunch.transactions).toHaveTransaction({ from: faker.address, to: fireworks.address, success: false, exitCode: ExitCode.AccessDenied })
     });
 
-    it('Tact compute phase | exit code = 133', async () => {
+    it('tact exit code | exit code = 133', async () => {
         const faker = await blockchain.treasury('faker');
         const fakeLaunch = await fireworks.send(faker.getSender(), { value: toNano('0.05'), }, { $$type: 'FakeLaunch', exitCode: BigInt(ExitCode.ContractStopped) });
         expect(fakeLaunch.transactions).toHaveTransaction({ from: faker.address, to: fireworks.address, success: false, exitCode: 40368 })
     });
 
-    it('Tact compute phase | exit code = 134', async () => {
+    it('tact exit code | exit code = 134', async () => {
         const faker = await blockchain.treasury('faker');
         const fakeLaunch = await fireworks.send(faker.getSender(), { value: toNano('0.05'), }, { $$type: 'FakeLaunch', exitCode: BigInt(ExitCode.InvalidArgument) });
         expect(fakeLaunch.transactions).toHaveTransaction({ from: faker.address, to: fireworks.address, success: false, exitCode: ExitCode.InvalidArgument })
     });
 
-    // it('Tact compute phase | exit code = 135', async () => {
+    // it('tact exit code | exit code = 135', async () => {
     //     const faker = await blockchain.treasury('faker');
     //     const fakeLaunch = await fireworks.send(faker.getSender(), { value: toNano('0.05'), }, { $$type: 'FakeLaunch', exitCode: BigInt(ExitCode.CodeNotFound) });
     //     expect(fakeLaunch.transactions).toHaveTransaction({ from: faker.address, to: fireworks.address, success: false, exitCode: ExitCode.CodeNotFound })
     // });
 
-    it('Tact compute phase | exit code = 136', async () => {
+    it('tact exit code | exit code = 136', async () => {
         const faker = await blockchain.treasury('faker');
         const fakeLaunch = await fireworks.send(faker.getSender(), { value: toNano('0.05'), }, { $$type: 'FakeLaunch', exitCode: BigInt(ExitCode.InvalidAddress) });
         expect(fakeLaunch.transactions).toHaveTransaction({ from: faker.address, to: fireworks.address, success: false, exitCode: ExitCode.InvalidAddress })
     });
 
-    it('Tact compute phase | exit code = 137', async () => {
+    it('tact exit code | exit code = 137', async () => {
         const faker = await blockchain.treasury('faker');
         const fakeLaunch = await fireworks.send(faker.getSender(), { value: toNano('0.05'), }, { $$type: 'FakeLaunch', exitCode: BigInt(ExitCode.MasterchainSupportNotEnabled) });
         expect(fakeLaunch.transactions).toHaveTransaction({ from: faker.address, to: fireworks.address, success: false, exitCode: ExitCode.MasterchainSupportNotEnabled })
